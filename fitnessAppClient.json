@@ -1,0 +1,8 @@
+{
+    "url": "https://fitnessapp-api-ln8u.onrender.com/",
+    "endpoints": {
+        "register": "/register",
+        "login": "/login",
+        "workouts": "/workouts"
+    }
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { Button, Form, Table, Modal } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import UserContext from '../UserContext';
 
@@ -13,6 +13,9 @@ export default function Workouts() {
     const [workoutName, setWorkoutName] = useState('');
     const [workoutDuration, setWorkoutDuration] = useState('');
     const [workoutStatus, setWorkoutStatus] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const handleClose = () => setShowModal(false);
+    const handleShow = () => setShowModal(true);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -76,6 +79,7 @@ export default function Workouts() {
             if (response.ok) {
                 toast.success('Workout added successfully');
                 setNewWorkout({ name: '', duration: '', status: 'Active' });
+                handleClose();
                 refreshPage();
             } else {
                 const data = await response.json();
@@ -161,7 +165,7 @@ export default function Workouts() {
         <div className="workout-dashboard">
             <h1 className="dashboard-title">Workouts</h1>
             <div>
-                <Button className="m-2" variant="info" onClick={() => setView('addWorkout')}>Add Workout</Button>
+                <Button id="addWorkout" className="m-2" variant="info" onClick={handleShow}>Add Workout</Button>
                 <Button className="m-2" variant="info" onClick={() => refreshPage()}>Get Workouts</Button>
                 <Button className="m-2" variant="info" onClick={() => setView('updateWorkout')}>Update Workout</Button>
                 <Button className="m-2" variant="info" onClick={() => setView('deleteWorkout')}>Delete Workout</Button>
@@ -172,58 +176,26 @@ export default function Workouts() {
                 <p>Loading...</p>
             ) : (
                 <>
-                    {view === 'addWorkout' && (
-                        <Form onSubmit={addWorkout} className="mt-4">
-                            <h3>Add Workout</h3>
-                            <Form.Group controlId="workoutName">
-                                <Form.Label>Workout Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Enter workout name"
-                                    value={newWorkout.name}
-                                    onChange={(e) =>
-                                        setNewWorkout({ ...newWorkout, name: e.target.value })
-                                    }
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="workoutDuration">
-                                <Form.Label>Workout Duration</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Enter workout duration"
-                                    value={newWorkout.duration}
-                                    onChange={(e) =>
-                                        setNewWorkout({ ...newWorkout, duration: e.target.value })
-                                    }
-                                />
-                            </Form.Group>
-                            <Button variant="primary" type="submit" className="mt-3">Add Workout</Button>
-                        </Form>
-                    )}
-
                     {view === 'getWorkouts' && (
                         <div className="mt-4">
                             <h3>Workouts List</h3>
-                            <Table striped bordered hover>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Duration</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {workouts.map((workout) => (
-                                        <tr key={workout._id}>
-                                            <td>{workout._id}</td>
-                                            <td>{workout.name}</td>
-                                            <td>{workout.duration}</td>
-                                            <td>{workout.status}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
+                            <div className="row">
+                                {workouts.map((workout) => (
+                                    <div key={workout._id} className="col-md-4 mb-4">
+                                        <div className="card">
+                                            <div className="card-body">
+                                                <h5 className="card-title">{workout.name}</h5>
+                                                <p className="card-text">
+                                                    <strong>ID:</strong> {workout._id}<br />
+                                                    <strong>Duration:</strong> {workout.duration} minutes<br />
+                                                    <strong>Status:</strong> {workout.status}<br />
+                                                    <strong>Date Added:</strong> {new Date(workout.dateAdded).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 
@@ -277,35 +249,55 @@ export default function Workouts() {
                         </Form>
                     )}
 
-                {view === 'completeWorkoutStatus' && (
-                    <Form className="mt-4">
-                        <h3>Complete Workout Status</h3>
-                        <Form.Group controlId="workoutId">
-                            <Form.Label>Workout ID</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter workout ID"
-                                value={workoutId}
-                                onChange={(e) => setWorkoutId(e.target.value)}
-                            />
-                        </Form.Group>
-                        <Button
-                            variant="success"
-                            className="mt-3"
-                            onClick={() => {
-                                if (!workoutId) {
-                                    toast.error('Please enter a Workout ID');
-                                    return;
-                                }
-                                completeWorkoutStatus(workoutId);
-                            }}
-                        >
-                            Complete Workout
-                        </Button>
-                    </Form>
-                )}
+                    {view === 'completeWorkoutStatus' && (
+                        <Form className="mt-4">
+                            <h3>Complete Workout Status</h3>
+                            <Form.Group controlId="workoutId">
+                                <Form.Label>Workout ID</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter workout ID"
+                                    value={workoutId}
+                                    onChange={(e) => setWorkoutId(e.target.value)}
+                                />
+                            </Form.Group>
+                            <Button variant="success" onClick={() => completeWorkoutStatus(workoutId)} className="mt-3">
+                                Mark as Completed
+                            </Button>
+                        </Form>
+                    )}
                 </>
             )}
+
+
+            <Modal show={showModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Add Workout</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={addWorkout}>
+                        <Form.Group controlId="workoutName">
+                            <Form.Label>Workout Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter workout name"
+                                value={newWorkout.name}
+                                onChange={(e) => setNewWorkout({ ...newWorkout, name: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="workoutDuration">
+                            <Form.Label>Workout Duration</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter duration"
+                                value={newWorkout.duration}
+                                onChange={(e) => setNewWorkout({ ...newWorkout, duration: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Button variant="primary" type="submit" className="mt-3">Add Workout</Button>
+                    </Form>
+                </Modal.Body>
+            </Modal>
         </div>
     );
 }

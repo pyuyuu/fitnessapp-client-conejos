@@ -8,6 +8,8 @@ import AppNavBar from './components/AppNavBar';
 import Home from './pages/Home';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import Workouts from './pages/Workouts';
+import Logout from './pages/Logout';
 import './App.css';
 
 
@@ -49,6 +51,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/workouts" element={<Workouts />} />
+            <Route path="/logout" element={<Logout />} />
           </Routes>
         </Container>
         <Toaster position="bottom-right" reverseOrder={false}

@@ -41,7 +41,7 @@ export default function Login() {
                 setEmail('');
                 setPassword('');
 
-                navigate('/');
+                navigate('/Workouts');
                 toast.success('Login successful!');
                 setTimeout(() => {
                     window.location.reload();
